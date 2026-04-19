@@ -1,0 +1,21 @@
+_start:
+    # load a -> f0, b -> f1
+    li      x1, 0x7800
+    flw     f0, 0(x1)
+    li      x2, 0x7810
+    flw     f1, 0(x2)
+
+    # s = a*a + b*b
+    fmul.s  f2, f0, f0
+    fmul.s  f3, f1, f1
+    fadd.s  f2, f2, f3
+
+    # hypot = sqrt(s)
+    fsqrt.s f2, f2
+
+    # store once to 0x7000
+    li      x6, 0x7000
+    fsw     f2, 0(x6)
+
+done:
+    j       done

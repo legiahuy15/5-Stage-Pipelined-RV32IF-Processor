@@ -1,0 +1,13 @@
+_start:
+
+li x10, 0x7020
+li x11, 0x7024
+
+li x2, 0xF9A4B099   # 1234
+li x3, 0x9282F880   # 5678
+
+sw x2, 0(x11)
+sw x3, 0(x10)
+
+done:
+    j       done

@@ -1,0 +1,18 @@
+# ------------------------------------------------------------------
+# Case A (integer): LW -> ADDI (load-use hazard, cần stall 1 chu kỳ)
+
+li     x9, 0x2000
+
+# Chuẩn bị dữ liệu: [0x2000] = 123
+addi   x1,  x0, 123
+sw     x1,  0(x9)
+
+# Tạo hazard: dùng ngay kết quả của LW ở lệnh kế tiếp
+lw     x2,  0(x9)            # x2 = 123  (dữ liệu có ở MEM)
+addi   x3,  x2, 1            # x3 = 124  (EX cần x2 -> phải stall)
+
+li     x10, 0x7000           # x10 = 0x7000
+sw     x3,  4(x10)           # ghi 124 ra 0x7000 để kiểm tra
+
+done:
+jal    x0, done

@@ -1,0 +1,38 @@
+_start:
+    # Load input from switches
+    li t0, 0x7800               # Load base address of switches into t0
+    lw a1, 0(t0)                # Read switch value into a1
+
+    # Initialize factorial calculation
+    li t2, 1                    # t2 = factorial result (initialize to 1)
+    li t3, 1                    # t3 = counter (initialize to 1)
+
+factorial_loop:
+    # Check if counter (t3) exceeds input value (a1)
+    bgt t3, a1, store_result    # If t3 > a1, go to store_result
+
+    # Multiply t2 = t2 * t3 (using addition loop to avoid multiplication instruction)
+    li t4, 0                    # t4 will hold the product temporarily
+    li t5, 0                    # t5 is a counter for repeated addition
+
+multiply:
+    add t4, t4, t2              # t4 = t4 + t2 (accumulate product)
+    addi t5, t5, 1              # Increment addition counter
+    bne t5, t3, multiply        # Repeat until t5 == t3
+
+    # Update factorial result
+    mv t2, t4                   # Move result of t4 to t2 (t2 = t2 * t3)
+
+    # Increment the counter
+    addi t3, t3, 1              # t3++
+
+    # Repeat factorial loop
+    j factorial_loop
+
+store_result:
+    # Store the result in red LEDs (write to address 0x7000)
+    li t6, 0x7000               # Load address of red LEDs into t6
+    sw t2, 0(t6)                # Write factorial result to red LEDs
+
+end:
+    j end                       # Infinite loop to end program

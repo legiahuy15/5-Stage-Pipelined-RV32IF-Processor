@@ -1,0 +1,88 @@
+li x1, 0x2000
+li x2, 0x2004
+
+li x3, 0x40A00000
+sw x3, 0(x1)
+
+li x4, 0x40000000
+sw x4, 0(x2)
+
+flw f0, 0(x1)
+flw f1, 0(x2)
+
+fdiv.s f2, f0, f1
+fsqrt.s x5, f0
+
+li x6, 0x7000
+fsw f2, 0(x6)
+
+li x7, 0x7010
+fsw f5, 0(x7)
+
+///////////////////////////////////////////////////////////////////////////////
+
+li x1, 0x2000
+
+li x2, 0x40800000
+sw x2, 0(x1)
+
+flw f0, 0(x1)
+
+fsqrt.s x5, f0
+
+li x6, 0x7000
+fsw f5, 0(x6)
+
+///////////////////////////////////////////////////////////////////////////////
+
+li x1, 0x2000
+li x2, 0x2004
+
+li x3, 0x40A00000
+sw x3, 0(x1)
+
+li x4, 0x40000000
+sw x4, 0(x2)
+
+flw f0, 0(x1)
+flw f1, 0(x2)
+
+fadd.s f2, f0, f1
+fsub.s f3, f0, f1
+
+li x6, 0x7000
+fsw f2, 0(x6)
+
+li x7, 0x7010
+fsw f3, 0(x7)
+
+///////////////////////////////////////////////////////////////////////////////
+
+li x1, 0xAA
+csrrs x2, 0x03, x1
+
+li x2, 0xF0
+csrrs x3, 0x01, x2
+
+li x4, 0x7000
+sw x3, 0(x4)
+
+///////////////////////////////////////////////////////////////////////////////
+
+# Khởi tạo thanh ghi
+li  x1, 0x3f800000  # 1.0
+li  x2, 0x00000000  # 0.0
+
+# Tải vào f0 và f1
+fmv.s.x f0, x1
+fmv.s.x f1, x2
+
+# FP operation: chia 1.0 / 0.0  -> fflags = 0b01000 (divide-by-zero)
+fdiv.s  f2, f0, f1
+
+# Zicsr ngay sau FP: đọc fflags vào x3 (CSR addr 0x001)
+csrrw   x3, 0x001, x0
+
+# Ví dụ ghi x3 ra bộ nhớ để quan sát
+li  x4, 0x7000
+sw  x3, 0(x4)

@@ -1,0 +1,19 @@
+_start:
+
+    li x1, 0x7800           # sw addr
+    lw x2, 0(x1)
+
+    fcvt.s.w f0, x2
+
+    fsqrt.s x1, f0
+
+    #csrrwi   x0, 0x002, x2   # frm <- 2 (RDN)
+    #csrrwi   x0, 0x002, x3   # frm <- 3 (RUP)
+
+    fcvt.w.s x3, f1
+
+    li x10, 0x7000          # ledr addr
+    sw x3, 0(x10)
+
+done:
+    j       done

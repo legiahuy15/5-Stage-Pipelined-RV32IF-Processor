@@ -1,0 +1,10 @@
+# === Case 1: Integer ALU forwarding chain (x1 -> x2 -> x3) ===
+
+addi   x1,  x0, 5         # x1 = 5
+addi   x2,  x1, 7         # x2 = x1 + 7  (cần EX->EX forwarding)
+add    x3,  x2, x1        # x3 = x2 - x1  (chaining liên tiếp)
+li     x10, 0x7000        # x10 = 0x7000
+sw     x3,  0(x10)        # store x3 để quan sát (địa chỉ 0x7000)
+
+done:
+jal    x0, done

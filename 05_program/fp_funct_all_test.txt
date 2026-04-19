@@ -1,0 +1,131 @@
+# Tất cả các kết quả lần lượt GHI ĐÈ vào đúng địa chỉ 0x7000
+
+#---------------------------
+# Khởi tạo hằng và địa chỉ
+#---------------------------
+li      x1, 0x3f800000        # 1.0
+li      x2, 0x40000000        # 2.0
+li      x3, 0x40400000        # 3.0
+li      x4, 0x00000000        # 0.0
+li      x31, 0x7000           # địa chỉ xuất kết quả
+
+# Nạp vào các thanh ghi FP
+fmv.s.x f0, x1                # f0 = 1.0
+fmv.s.x f1, x2                # f1 = 2.0
+fmv.s.x f2, x3                # f2 = 3.0
+fmv.s.x f3, x4                # f3 = 0.0
+
+#---------------------------
+# FMA: fmadd/fmsub/fnmsub/fnmadd
+#---------------------------
+fmadd.s   f4, f0, f1, f2      # 1*2+3 = 5.0
+fsw       f4, 0(x31)
+
+fmsub.s   f4, f0, f1, f2      # 1*2-3 = -1.0
+fsw       f4, 0(x31)
+
+fnmsub.s  f4, f0, f1, f2      # -(1*2)+3 = 1.0
+fsw       f4, 0(x31)
+
+fnmadd.s  f4, f0, f1, f2      # -(1*2)-3 = -5.0
+fsw       f4, 0(x31)
+
+#---------------------------
+# Cộng / Trừ / Nhân / Chia / Căn
+#---------------------------
+fadd.s    f4, f0, f1          # 1+2 = 3.0
+fsw       f4, 0(x31)
+
+fsub.s    f4, f1, f0          # 2-1 = 1.0
+fsw       f4, 0(x31)
+
+fmul.s    f4, f0, f1          # 1*2 = 2.0
+fsw       f4, 0(x31)
+
+fdiv.s    f4, f1, f0          # 2/1 = 2.0
+fsw       f4, 0(x31)
+
+fsqrt.s   f4, f1              # sqrt(2.0)
+fsw       f4, 0(x31)
+
+#---------------------------
+# Sign inject
+#---------------------------
+fsgnj.s   f4, f0, f1          # copy sign(2.0) -> +1.0
+fsw       f4, 0(x31)
+
+fsgnjn.s  f4, f0, f1          # invert sign(2.0) -> -1.0
+fsw       f4, 0(x31)
+
+fsgnjx.s  f4, f0, f1          # sign = sign(1.0) XOR sign(2.0)
+fsw       f4, 0(x31)
+
+#---------------------------
+# Min / Max
+#---------------------------
+fmin.s    f4, f0, f1          # min(1,2) = 1.0
+fsw       f4, 0(x31)
+
+fmax.s    f4, f0, f1          # max(1,2) = 2.0
+fsw       f4, 0(x31)
+
+#---------------------------
+# Chuyển đổi float -> int & move bit
+#---------------------------
+fcvt.w.s   x5, f0             # 1.0 -> 1 (signed)
+sw         x5, 0(x31)
+
+fcvt.wu.s  x6, f1             # 2.0 -> 2 (unsigned)
+sw         x6, 0(x31)
+
+fmv.x.s    x7, f2             # raw bits của 3.0
+sw         x7, 0(x31)
+
+#---------------------------
+# So sánh
+#---------------------------
+feq.s     x8,  f0, f1         # 1==2 ? -> 0
+sw        x8,  0(x31)
+
+flt.s     x9,  f0, f1         # 1<2  ? -> 1
+sw        x9,  0(x31)
+
+fle.s     x10, f1, f0         # 2<=1 ? -> 0
+sw        x10, 0(x31)
+
+#---------------------------
+# Phân loại
+#---------------------------
+fclass.s  x11, f0             # class(1.0) -> mask
+sw        x11, 0(x31)
+
+#---------------------------
+# Chuyển đổi int -> float & move bit
+#---------------------------
+li        x12, 42
+fcvt.s.w  f4, x12             # 42 -> 42.0
+fsw       f4, 0(x31)
+
+li        x13, 100
+fcvt.s.wu f4, x13             # 100u -> 100.0
+fsw       f4, 0(x31)
+
+fmv.s.x   f4, x13             # move raw bits 0x00000064 vào f4
+fsw       f4, 0(x31)
+
+#---------------------------
+# Load/Store FP
+#---------------------------
+fsw       f0, 0(x31)          # store 1.0
+flw       f5, 0(x31)          # load lại vào f5
+fsw       f5, 0(x31)          # xuất lại (để có "kết quả" cho bước flw)
+
+#---------------------------
+# Ví dụ chia cho 0.0
+#---------------------------
+fdiv.s    f2, f0, f3          # 1.0 / 0.0 -> +Inf (fflags.DZ nếu đọc)
+fsw       f2, 0(x31)
+
+# Dừng
+halt:
+j halt

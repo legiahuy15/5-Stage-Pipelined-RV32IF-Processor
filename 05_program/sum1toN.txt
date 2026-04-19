@@ -1,0 +1,26 @@
+_start:
+    # Load input from switches
+    li t0, 0x7800               # Load base address of switches into t0
+    lw a1, 0(t0)                # Read switch value into a1 (N)
+
+    # Initialize sum calculation
+    li t2, 0                    # t2 = sum result (initialize to 0)
+    li t3, 1                    # t3 = counter (initialize to 1)
+
+sum_loop:
+    # Check if counter (t3) exceeds input value (a1)
+    bgt t3, a1, store_result    # If t3 > a1, go to store_result
+
+    # Add t3 to sum (t2 = t2 + t3)
+    add t2, t2, t3              # t2 = t2 + t3
+
+    # Increment the counter
+    addi t3, t3, 1              # t3++
+
+    # Repeat sum loop
+    j sum_loop
+
+store_result:
+    # Store the result in red LEDs (write to address 0x7000)
+    li t6, 0x7000               # Load address of red LEDs into t6
+    sw t2, 0(t6)                # Write sum result to red LEDs

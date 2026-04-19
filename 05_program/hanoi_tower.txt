@@ -1,0 +1,31 @@
+_start:
+    # Đọc N (số đĩa) từ 0x7800
+    li   t0, 0x7800
+    lw   t1, 0(t0)          # t1 = N
+
+    # Trường hợp N = 0 -> số bước = 0
+    beq  t1, x0, store_zero
+
+    # Tính 2^N - 1 bằng dịch trái lũy thừa 2
+    li   t2, 1              # t2 = 1 (sẽ thành 2^N)
+    mv   t3, t1             # t3 = N (bộ đếm)
+
+pow_loop:
+    beq  t3, x0, pow_done   # hết N lần dịch -> t2 = 2^N
+    slli t2, t2, 1          # t2 <<= 1
+    addi t3, t3, -1
+    j    pow_loop
+
+pow_done:
+    addi t2, t2, -1         # t2 = 2^N - 1 (số bước tối thiểu)
+    j    store_result
+
+store_zero:
+    li   t2, 0              # N = 0 -> 0 bước
+
+store_result:
+    li   t6, 0x7000
+    sw   t2, 0(t6)          # ghi kết quả đúng 1 lần
+
+done:
+    j    done               # dừng tại đây (không ghi thêm lần nào)

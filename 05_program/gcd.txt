@@ -1,0 +1,35 @@
+_start:
+    # Đọc 2 đầu vào
+    li   t0, 0x7800         # địa chỉ input A
+    lw   t1, 0(t0)          # t1 = A
+    li   t0, 0x7810         # địa chỉ input B
+    lw   t2, 0(t0)          # t2 = B
+
+    # Trường hợp đặc biệt: nếu A == 0 hoặc B == 0
+    beq  t1, x0, store_b    # A == 0 -> GCD = B
+    beq  t2, x0, store_a    # B == 0 -> GCD = A
+
+gcd_loop:
+    beq  t1, t2, store_a    # bằng nhau -> GCD = t1 (hoặc t2)
+    bgt  t1, t2, a_gt_b     # nếu A > B thì A = A - B
+    sub  t2, t2, t1         # ngược lại B = B - A
+    j    gcd_loop
+
+a_gt_b:
+    sub  t1, t1, t2
+    j    gcd_loop
+
+store_a:
+    mv   t2, t1             # kết quả chung đặt ở t2
+    j    store_result
+
+store_b:
+    # t2 đã là B, không cần làm gì
+    # rơi xuống store_result
+
+store_result:
+    li   t6, 0x7000
+    sw   t2, 0(t6)          # ghi GCD đúng 1 lần
+
+done:
+    j    done               # dừng (không ghi thêm lần nào)

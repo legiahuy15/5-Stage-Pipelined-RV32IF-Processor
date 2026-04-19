@@ -1,0 +1,40 @@
+# Input:  float32 tại 0x7800  (đọc vào f0)
+# Output: sau mỗi lần đổi frm (0..4), chuyển f0 -> int32 và ghi ra 0x7000
+# CSR frm = 0x002
+
+_start:
+    # load float x -> f0
+    li       x1, 0x7800
+    flw      f0, 0(x1)
+
+    # output addr
+    li       x6, 0x7000
+
+    # -------------------------------
+    # frm = 000 (RNE)
+    csrrwi   x0, 0x002, 0       # frm <- 0 (RNE)
+    fcvt.w.s x5, f0             # dùng frm hiện hành
+    sw       x5, 0(x6)
+
+    # frm = 001 (RTZ)
+    csrrwi   x0, 0x002, 1       # frm <- 1 (RTZ)
+    fcvt.w.s x5, f0
+    sw       x5, 0(x6)
+
+    # frm = 010 (RDN)
+    csrrwi   x0, 0x002, 2       # frm <- 2 (RDN)
+    fcvt.w.s x5, f0
+    sw       x5, 0(x6)
+
+    # frm = 011 (RUP)
+    csrrwi   x0, 0x002, 3       # frm <- 3 (RUP)
+    fcvt.w.s x5, f0
+    sw       x5, 0(x6)
+
+    # frm = 100 (RMM)
+    csrrwi   x0, 0x002, 4       # frm <- 4 (RMM)
+    fcvt.w.s x5, f0
+    sw       x5, 0(x6)
+
+done:
+    j        done

@@ -1,0 +1,167 @@
+# Tất cả các kết quả lần lượt GHI ĐÈ vào đúng địa chỉ 0x7000
+
+#---------------------------
+# Khởi tạo hằng và địa chỉ
+#---------------------------
+li      x1, 0x3f800000        # 1.0
+li      x2, 0x40000000        # 2.0
+li      x3, 0x40400000        # 3.0
+li      x4, 0x00000000        # 0.0
+li      x31, 0x7000           # địa chỉ xuất kết quả
+
+# Nạp vào các thanh ghi FP
+fmv.s.x  f0, x1               # f0 = 1.0
+fmv.s.x  f1, x2               # f1 = 2.0
+fmv.s.x  f2, x3               # f2 = 3.0
+fmv.s.x  f3, x4               # f3 = 0.0
+
+#---------------------------
+# FMA: fmadd/fmsub/fnmsub/fnmadd
+#---------------------------
+fmadd.s   f4, f0, f1, f2      # 1*2+3 = 5.0
+fsw       f4, 0(x31)
+
+fmsub.s   f4, f0, f1, f2      # 1*2-3 = -1.0
+fsw       f4, 0(x31)
+
+fnmsub.s  f4, f0, f1, f2      # -(1*2)+3 = 1.0
+fsw       f4, 0(x31)
+
+fnmadd.s  f4, f0, f1, f2      # -(1*2)-3 = -5.0
+fsw       f4, 0(x31)
+
+#---------------------------
+# Cộng / Trừ / Nhân / Chia / Căn
+#---------------------------
+fadd.s    f4, f0, f1          # 1+2 = 3.0
+fsw       f4, 0(x31)
+
+fsub.s    f4, f1, f0          # 2-1 = 1.0
+fsw       f4, 0(x31)
+
+fmul.s    f4, f0, f1          # 1*2 = 2.0
+fsw       f4, 0(x31)
+
+fdiv.s    f4, f1, f0          # 2/1 = 2.0
+fsw       f4, 0(x31)
+
+fsqrt.s   x4, f1              # sqrt(2.0)
+fsw       f4, 0(x31)
+
+#---------------------------
+# Sign inject
+#---------------------------
+fsgnj.s   f4, f0, f1          # copy sign(2.0) -> +1.0
+fsw       f4, 0(x31)
+
+fsgnjn.s  f4, f0, f1          # invert sign(2.0) -> -1.0
+fsw       f4, 0(x31)
+
+fsgnjx.s  f4, f0, f1          # sign = sign(1.0) XOR sign(2.0)
+fsw       f4, 0(x31)
+
+#---------------------------
+# Min / Max
+#---------------------------
+fmin.s    f4, f0, f1          # min(1,2) = 1.0
+fsw       f4, 0(x31)
+
+fmax.s    f4, f0, f1          # max(1,2) = 2.0
+fsw       f4, 0(x31)
+
+#---------------------------
+# Chuyển đổi float -> int & move bit
+#---------------------------
+fcvt.w.s   x5, f0             # 1.0 -> 1 (signed)
+sw         x5, 0(x31)
+
+fcvt.wu.s  x6, f1             # 2.0 -> 2 (unsigned)
+sw         x6, 0(x31)
+
+fmv.x.s    x7, f2             # raw bits của 3.0 (toolchain có thể là fmv.x.w)
+sw         x7, 0(x31)
+
+#---------------------------
+# So sánh
+#---------------------------
+feq.s     x8,  f0, f1         # 1==2 ? -> 0
+sw        x8,  0(x31)
+
+flt.s     x9,  f0, f1         # 1<2  ? -> 1
+sw        x9,  0(x31)
+
+fle.s     x10, f1, f0         # 2<=1 ? -> 0
+sw        x10, 0(x31)
+
+#---------------------------
+# Phân loại
+#---------------------------
+fclass.s  x11, f0             # class(1.0) -> mask
+sw        x11, 0(x31)
+
+#---------------------------
+# Chuyển đổi int -> float & move bit
+#---------------------------
+li        x12, 42
+fcvt.s.w  f4, x12             # 42 -> 42.0
+fsw       f4, 0(x31)
+
+li        x13, 100
+fcvt.s.wu f4, x13             # 100u -> 100.0
+fsw       f4, 0(x31)
+
+fmv.s.x   f4, x13             # move raw bits 0x00000064 vào f4
+fsw       f4, 0(x31)
+
+addi x0, x0, 0
+addi x0, x0, 0
+
+#---------------------------
+# Load/Store FP (đổi FLW để dễ quan sát)
+#---------------------------
+# Dùng 0x7004 làm vùng tạm (không phải kết quả cuối) để nạp giá trị khác rõ ràng.
+# Ví dụ nạp -10.0 (0xC1200000), sau đó FLW -> FSW kết quả về 0x7000.
+li        x20, 0xC1200000     # -10.0 (float)
+sw        x20, 4(x31)         # ghi tạm vào 0x7004
+flw       f5, 4(x31)          # load giá trị khác vào f5
+fsw       f5, 0(x31)          # xuất kết quả (=-10.0) tại 0x7000
+
+#================================================================
+# Zicsr checks (luôn thao tác CSR 0x003 = FCSR)
+# Mỗi lệnh Zicsr cũng ghi ĐÈ 0x7000 (0(x31)) với giá trị trả về (rd)
+#================================================================
+# Chuẩn bị mask
+li        x14, 0x0000001F     # mask fflags[4:0]
+li        x15, 0x000000A0     # frm=101 (bits [7:5])
+li        x16, 0x00000007     # để clear vài bit thấp
+
+# 1) CSRRWI: FCSR <- 0x00, rd := old FCSR
+csrrwi    x17, 0x003, x0
+sw        x17, 0(x31)
+
+# 2) CSRRW: FCSR <- 0x1F, rd := old FCSR
+csrrw     x18, 0x003, x14
+sw        x18, 0(x31)
+
+# 3) CSRRS: FCSR <- FCSR | 0xA0, rd := old FCSR
+csrrs     x19, 0x003, x15
+sw        x19, 0(x31)
+
+# 4) CSRRC: FCSR <- FCSR & ~0x07, rd := old FCSR
+csrrc     x20, 0x003, x16
+sw        x20, 0(x31)
+
+# 5) CSRRSI: FCSR <- FCSR | 0x04, rd := old FCSR
+csrrsi     x21, 0x003, x4
+sw        x21, 0(x31)
+
+# 6) CSRRCI: FCSR <- FCSR & ~0x01, rd := old FCSR
+csrrci     x22, 0x003, x1
+sw        x22, 0(x31)
+
+addi x0, x0, 0
+addi x0, x0, 0
+
+# Dừng
+halt:
+j halt

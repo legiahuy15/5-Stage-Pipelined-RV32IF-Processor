@@ -1,0 +1,28 @@
+_start:
+    # load x -> f0
+    li      x1, 0x7800
+    flw     f0, 0(x1)
+
+    # y = x (copy)
+    fsgnj.s f1, f0, f0      # f1 = f0
+
+    # f2 = 0.5f (nạp hằng từ GPR)
+    li      x2, 0x3F000000  # 0.5f
+    fmv.s.x f2, x2
+
+    # loop count = 5
+    li      x3, 5
+
+loop:
+    fdiv.s  f3, f0, f1      # t = x / y
+    fadd.s  f3, f3, f1      # t = y + x/y
+    fmul.s  f1, f2, f3      # y = 0.5 * t
+    addi    x3, x3, -1
+    bnez    x3, loop
+
+    # store once to 0x7000
+    li      x6, 0x7000
+    fsw     f1, 0(x6)
+
+done:
+    j       done
