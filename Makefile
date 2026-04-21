@@ -1,7 +1,7 @@
 
 ##################################################
 #
-#Thank Mr. Khai Pham - my first & esteemed mentor - for this Makefile !
+#Thanks Mr. Khai Pham - my first & esteemed mentor - for this Makefile !
 #HCMUT LAB 203 
 #
 ##################################################
