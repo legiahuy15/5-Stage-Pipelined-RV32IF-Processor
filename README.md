@@ -1,16 +1,5 @@
 # 5-Stage Pipelined RV32IF Processor
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Project Details](#project-details)
-- [Key Features](#key-features)
-- [System Architecture](#system-architecture)
-- [Simulation & Deployment](#simulation--deployment)
-- [References](#references)
-- [Acknowledgments](#acknowledgments)
-- [License](#license)
-
 ## Overview
 
 This project represents a Senior Graduation Thesis focused on the design and implementation of a RISC-V processor supporting the RV32IF Instruction Set Architecture (ISA). Developed at the Register Transfer Level (RTL) using SystemVerilog, the processor is optimized for deployment on FPGA platforms.
@@ -51,7 +40,7 @@ The primary objective is to construct a robust CPU capable of executing basic in
   - **Accrued Exception Flags:**
   The `fflags` field (bits 4:0) contains the following status flags:
 
-    | Bit | Tên viết tắt | Ý nghĩa |
+    | Bit | Acronym | Meaning |
     | :---: | :--- | :--- |
     | 4 | **NV** | Invalid Operation |
     | 3 | **DZ** | Divide by Zero |
@@ -111,7 +100,3 @@ The processor is designed with a modular architecture, incorporating the followi
 ## Acknowledgments
 
 Special thanks to [Lampro-Mellon/Caravel_FPU](https://github.com/Lampro-Mellon/Caravel_FPU) for providing the foundational code used in developing the Floating-Point Unit (FPU).
-
-## License
-
-This project is licensed under the MIT License. You are permitted to use, modify, and distribute the code for educational and commercial purposes, provided that the original copyright notice is retained. Refer to the LICENSE file for detailed terms.
