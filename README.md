@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project represents a Senior Graduation Thesis focused on the design and implementation of a RISC-V processor supporting the RV32IF Instruction Set Architecture (ISA). Developed at the Register Transfer Level (RTL) using SystemVerilog, the processor is optimized for deployment on FPGA platforms.
+This project represents a Graduation Thesis focused on the design and implementation of a RISC-V processor supporting the RV32IF Instruction Set Architecture (ISA). Developed at the Register Transfer Level (RTL) using SystemVerilog, the processor is optimized for deployment on FPGA platforms.
 
 The primary objective is to construct a robust CPU capable of executing basic integer operations (RV32I) alongside single-precision floating-point arithmetic (RV32F), fully compliant with the IEEE-754 standard.
 
